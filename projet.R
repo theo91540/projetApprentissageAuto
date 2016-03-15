@@ -31,6 +31,7 @@ combi$FamilySize <- combi$SibSp + combi$Parch + 1
 
 # Engineered variable: Family
 combi$Surname <- sapply(combi$Name, FUN=function(x) {strsplit(x, split='[,.]')[[1]][1]})
+combi$Surname <- factor(combi$Surname)
 combi$FamilyID <- paste(as.character(combi$FamilySize), combi$Surname, sep="")
 combi$FamilyID[combi$FamilySize <= 2] <- 'Small'
 # Delete erroneous family IDs
@@ -82,8 +83,8 @@ write.csv(submit, file = "firstforest.csv", row.names = FALSE)
 
 # Build condition inference tree Random Forest
 set.seed(415)
-fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID,
-               data = train, controls=cforest_unbiased(ntree=2000, mtry=3)) 
+fit <- cforest(as.factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Title + FamilySize + FamilyID ,
+               data = train, controls=cforest_unbiased(ntree=417, mtry=11)) 
 # Now let's make a prediction and write a submission file
 Prediction <- predict(fit, test, OOB=TRUE, type = "response")
 submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
