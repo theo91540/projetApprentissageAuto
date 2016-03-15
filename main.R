@@ -45,7 +45,7 @@ noms <- sapply(total$Name, function(x) strsplit(x,'[.,]')[[1]][1])
 familleIDs <- paste0(total$TailleFamille, noms)
 total$FamilyId <- factor(familleIDs)
 familles <- data.frame(table(familleIDs))
-SmallFamily <- familles$FamilyId[familles$Freq<=2]
+SmallFamily <- familles$FamilyId[familles$Freq<=3]
 familleIDs[familleIDs %in% SmallFamily] <- 'PetiteFamille'
 total$Famille <- factor(familleIDs)
 
@@ -73,10 +73,25 @@ total$Embarked <- factor(total$Embarked)
 # On redécoupe total en train et test
 train <- total[total$Categorie=="train",]
 test <- total[total$Categorie=="test",]
+train$Survived <- factor(train$Survived)
 
 # On prédit Survived pour test à partir de train
 print("Début de la prédiction des données")
-prediction <- cforest(factor(Survived)~Famille+PositionCabine+Pont+Pclass+Sex+Age+SibSp+Parch+Fare+Embarked+Titre+Mere+Enfant, data=train, controls=cforest_unbiased(ntree=2000, mtry=3))
-test$Survived <- predict(prediction, test, type='response')
+prediction <- cforest(factor(Survived) ~
+									  Famille + 
+									  PositionCabine +
+									  Pont +
+									  Pclass +
+									  Sex +
+									  Age +
+									  SibSp +
+									  Parch +
+									  Fare +
+									  Embarked +
+									  Titre +
+									  Mere +
+									  Enfant,
+ data=train, controls=cforest_unbiased(ntree=500, mtry=3))
+test$Survived <- predict(prediction, test, OOB=TRUE, type='response')
 write.csv(test[,1:2],'submission.csv', row.names=FALSE)
 print("La prédiction de la base test a été écrite dans le fichier submission.csv")
